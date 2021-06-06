@@ -1,0 +1,15 @@
+Package: nougad
+Title: Non-linear Unmixing by Gradient Descent
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Mirek",
+           family = "Kratochvíl",
+           role = c("aut", "cre"),
+           email = "exa.exa@gmail.com",
+           comment = c(ORCID = "0000-0001-7356-4075"))
+Description: What the package does (one paragraph).
+License: Apache-2.0
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
