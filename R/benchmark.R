@@ -21,8 +21,7 @@ nougad.benchmark <- function(n=10240, k=30, d=40,
   emitted <- exprs %*% spectra
   received <- emitted + rnorm(length(emitted),sd=0.0005*sqrt(rowSums(emitted^2)))
   
-  sw <- t(t(spectra^2)/sqrt(colSums(spectra^4)))
-  res <- nougad(received, spectra, 2*sw, 1*sw, 5, iters=500)$unmixed
+  res <- nougad(received, spectra, 3, 1, 5, alpha=0.05)$unmixed
 
   trans <- function(x)asinh(x/100)
 
