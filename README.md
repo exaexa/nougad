@@ -49,11 +49,11 @@ In short, it can help you filter lots of unwanted noise from highly-expressed
 channels, which reduces the (induced) noise around zero. The following examples
 show the problem on a common use-case from cytometry. The data is generated
 using the `nougad.benchmark` function, refer to the source. Notably, the
-original cell expressions have a very precise zeroes (compare that with the
-very precise measurements from mass cytometry). Ideally, this is only disturbed
-by positive Poisson noise, and data are never negative. OLS, on the other hand,
-cannot handle these distinctions, and produces problems, mostly the infamous
-"spillover spread".
+original cell expressions have a very precise expressions around zeroes
+(compare that with the very precise measurements from mass cytometry). Ideally,
+this is only disturbed by positive Poisson noise, and data never get negative.
+OLS cannot handle these distinctions easily, and produces problems, mostly the
+infamous "spillover spread".
 
 #### Example: 5 markers in 10 channels
 
