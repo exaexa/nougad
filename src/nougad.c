@@ -4,7 +4,7 @@
 #include <Rmath.h>
 
 void
-pw_gd(const int* np,
+nougad_c(const int* np,
       const int* dp,
       const int* kp,
       const int* itersp,
@@ -60,7 +60,7 @@ pw_gd(const int* np,
   free(lastg_k);
 }
 
-static const R_CMethodDef cMethods[] = { { "nougad", (DL_FUNC)&pw_gd, 13 },
+static const R_CMethodDef cMethods[] = { { "nougad_c", (DL_FUNC)&nougad_c, 13 },
                                          { NULL, NULL, 0 } };
 
 void

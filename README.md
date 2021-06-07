@@ -42,3 +42,31 @@ options(nougad.vulkan.device = 1)
 ### CUDA
 
 TBD
+
+## Why non-linear weighted unmixing?
+
+In short, it can help you filter lots of unwanted noise from highly-expressed
+channels, which reduces the (induced) noise around zero. The following examples
+show the problem on a common use-case from cytometry. The data is generated
+using the `nougad.benchmark` function, refer to the source. Notably, the
+original cell expressions have a very precise zeroes (compare that with the
+very precise measurements from mass cytometry). Ideally, this is only disturbed
+by positive Poisson noise, and data are never negative. OLS, on the other hand,
+cannot handle these distinctions, and produces problems, mostly the infamous
+"spillover spread".
+
+#### Example: 5 markers in 10 channels
+
+![5markers-10channels](media/5m-10c.png)
+
+#### Example: 10 markers in 10 channels
+
+![10markers-10channels](media/10m-10c.png)
+
+#### Example: 30 markers in 30 channels
+
+![30markers-30channels](media/30m-30c.png)
+
+#### Example: 30 markers in 50 channels
+
+![30markers-50channels](media/30m-50c.png)

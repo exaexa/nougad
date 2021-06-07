@@ -40,7 +40,7 @@ nougad <- function(mixed, spectra,
   k <- nrow(spectra)
   if (ncol(spectra) != d) stop("Wrong size of spectra")
   mixed <- t(mixed)
-  s <- t(s)
+  spectra <- t(spectra)
   snw <- t(matrix(snw, nrow=k, ncol=d))
   spw <- t(matrix(spw, nrow=k, ncol=d))
   nw <- { tmp <- rep(0, k); tmp[] <- nw; tmp }
@@ -48,7 +48,7 @@ nougad <- function(mixed, spectra,
   x <- matrix(start, ncol=n, nrow=k)
   r <- matrix(0, ncol=n, nrow=d)
 
-  res <- .C("nougad",
+  res <- .C("nougad_c",
     n=as.integer(n),
     d=as.integer(d),
     k=as.integer(k),
