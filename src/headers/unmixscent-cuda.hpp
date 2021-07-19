@@ -41,14 +41,14 @@ public:
 			throw bpp::RuntimeError("No CUDA devices found!");
 		}
 
-		IGradientDescendAlgorithm::initialize(points, spectra, spectraPositiveWeights, spectraNegativeWeights, resultWeights, initialResult,
+		IGradientDescendAlgorithm<F>::initialize(points, spectra, spectraPositiveWeights, spectraNegativeWeights, resultWeights, initialResult,
 											  iterations, alpha, acceleration);
 		mPoints = &points;
 		mSpectra = &spectra;
 		mSpectraPositiveWeights = &spectraPositiveWeights;
 		mSpectraNegativeWeights = &spectraNegativeWeights;
 		mResultWeights = &resultWeights;
-		mResult = std::move(initialResult);
+		this->mResult = std::move(initialResult);
 	}
 
 	void prepareInputs() override
@@ -69,7 +69,7 @@ public:
 		mCuSpectraPositiveWeights.write(mSpectraPositiveWeights->data(), this->mSpectrumN * this->mDim);
 		mCuSpectraNegativeWeights.write(mSpectraNegativeWeights->data(), this->mSpectrumN * this->mDim);
 		mCuResultWeights.write(mResultWeights->data(), this->mSpectrumN);
-		mCuResult.write(mResult.data(), this->mN * this->mSpectrumN);
+		mCuResult.write(this->mResult.data(), this->mN * this->mSpectrumN);
 		mCuGradientMemory.memset(0);
 
 		mResultsLoaded = false;
@@ -85,7 +85,7 @@ public:
 		CUCH(cudaDeviceSynchronize());
 	}
 
-	const ResultT getResults() override
+	const typename IGradientDescendAlgorithm<F>::ResultT getResults() override
 	{
 		if (!mResultsLoaded)
 		{
@@ -94,7 +94,7 @@ public:
 			mResultsLoaded = true;
 		}
 
-		return IGradientDescendAlgorithm::getResults();
+		return IGradientDescendAlgorithm<F>::getResults();
 	}
 
 	void cleanup() override

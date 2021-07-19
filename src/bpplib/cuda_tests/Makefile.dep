@@ -1,1 +1,0 @@
-cuda.o: ./cuda/cuda.cpp ../include/cuda/cuda.hpp ../include/misc/exception.hppcuda_tests.o: ./cuda_tests.cpp ./cuda_test.hpp ../include/misc/exception.hpp

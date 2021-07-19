@@ -2,6 +2,8 @@
 #include <R_ext/Rdynload.h>
 #include <Rmath.h>
 
+#include "unmixscent-cuda.hpp"
+
 void nougad_c(const int* n, const int* dim, const int* spectraN, const int* iterations, const float* alpha, const float* acceleration,
 			  const float* s_dk, const float* spw_dk, const float* snw_dk, const float* nw_k, const float* y_dn, float* x_kn, float* r_dn)
 {
