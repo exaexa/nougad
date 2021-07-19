@@ -70,7 +70,7 @@ private:
 	 */
 	void swap(std::size_t idx1, std::size_t idx2)
 	{
-		for (std::size_t d = 0; d < DIM; ++d)
+		for (std::size_t d = 0; d < mDim; ++d)
 		{
 			std::swap((*this)[idx1][d], (*this)[idx2][d]);
 		}

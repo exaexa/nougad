@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <iostream>
 #include <vector>
+#include <functional>
 
 #include "points.hpp"
 #include "structs.cuh"
