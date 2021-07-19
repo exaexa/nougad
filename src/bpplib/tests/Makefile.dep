@@ -1,0 +1,60 @@
+blocking_queue.o: para/blocking_queue.cpp para/../test.hpp \
+ ../include/misc/exception.hpp ../include/para/blocking_queue.hpp
+thread_pool_old.o: para/thread_pool_old.cpp
+thread_pool.o: para/thread_pool.cpp para/../test.hpp \
+ ../include/misc/exception.hpp ../include/para/thread_pool.hpp \
+ ../include/para/blocking_queue.hpp ../include/math/random.hpp \
+ ../include/misc/ptr_fix.hpp
+main_tests.o: main_tests.cpp test.hpp ../include/misc/exception.hpp
+string_index.o: datastruct/string_index.cpp datastruct/../test.hpp \
+ ../include/misc/exception.hpp ../include/datastruct/string_index.hpp \
+ ../include/system/file.hpp ../include/system/memory_pool.hpp \
+ ../include/system/filesystem.hpp ../include/system/mmap_file.hpp
+heap.o: datastruct/heap.cpp datastruct/../test.hpp \
+ ../include/misc/exception.hpp ../include/datastruct/heap/regular.hpp \
+ ../include/datastruct/comparator.hpp \
+ ../include/datastruct/heap/looser.hpp ../include/math/random.hpp
+random.o: math/random.cpp math/../test.hpp ../include/misc/exception.hpp \
+ ../include/math/random.hpp
+linear.o: math/regression/linear.cpp math/regression/../../test.hpp \
+ ../include/misc/exception.hpp ../include/math/regression/linear.hpp
+hacks.o: system/hacks.cpp system/../test.hpp \
+ ../include/misc/exception.hpp ../include/system/hacks.hpp
+info.o: system/info.cpp system/../test.hpp ../include/misc/exception.hpp \
+ ../include/system/info.hpp
+filesystem.o: system/filesystem.cpp system/../test.hpp \
+ ../include/misc/exception.hpp ../include/system/filesystem.hpp
+file.o: system/file.cpp system/../test.hpp ../include/misc/exception.hpp \
+ ../include/system/file.hpp ../include/system/memory_pool.hpp \
+ ../include/system/filesystem.hpp ../include/math/random.hpp
+file_pool.o: system/file_pool.cpp system/../test.hpp \
+ ../include/misc/exception.hpp ../include/system/file_pool.hpp \
+ ../include/system/file.hpp ../include/system/memory_pool.hpp \
+ ../include/system/filesystem.hpp
+memory_pool.o: system/memory_pool.cpp system/../test.hpp \
+ ../include/misc/exception.hpp ../include/system/memory_pool.hpp
+stopwatch.o: system/stopwatch.cpp system/../test.hpp \
+ ../include/misc/exception.hpp ../include/system/stopwatch.hpp
+mmap_file.o: system/mmap_file.cpp system/../test.hpp \
+ ../include/misc/exception.hpp ../include/system/mmap_file.hpp \
+ ../include/system/file.hpp ../include/system/memory_pool.hpp \
+ ../include/system/filesystem.hpp ../include/math/random.hpp
+file_async.o: system/file_async.cpp
+k-medoids.o: algo/clustering/k-medoids.cpp algo/clustering/../../test.hpp \
+ ../include/misc/exception.hpp ../include/algo/clustering/k-medoids.hpp \
+ ../include/math/random.hpp
+k-means.o: algo/clustering/k-means.cpp algo/clustering/../../test.hpp \
+ ../include/misc/exception.hpp ../include/algo/clustering/k-means.hpp
+edit_distance.o: algo/edit_distance.cpp algo/../test.hpp \
+ ../include/misc/exception.hpp ../include/algo/edit_distance.hpp
+strings.o: algo/strings.cpp algo/../test.hpp \
+ ../include/misc/exception.hpp ../include/algo/strings.hpp
+lcs.o: algo/lcs.cpp algo/../test.hpp ../include/misc/exception.hpp \
+ ../include/algo/lcs.hpp
+terminal.o: cli/terminal.cpp cli/../test.hpp \
+ ../include/misc/exception.hpp ../include/cli/terminal.hpp
+args.o: cli/args.cpp cli/../test.hpp ../include/misc/exception.hpp \
+ ../include/cli/args.hpp ../include/system/filesystem.hpp \
+ ../include/misc/ptr_fix.hpp
+logger.o: cli/logger.cpp cli/../test.hpp ../include/misc/exception.hpp \
+ ../include/cli/logger.hpp ../include/misc/ptr_fix.hpp

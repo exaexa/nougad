@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\algo">
+      <UniqueIdentifier>{d34f0643-cf7a-4f97-a321-22cb8d3168e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cli">
+      <UniqueIdentifier>{d417a94c-f024-4e07-8572-0b712a0c79bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\datastruct">
+      <UniqueIdentifier>{3b443fe2-d3d3-4b11-89ef-f3d7af228077}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\system">
+      <UniqueIdentifier>{d3f9ab5b-3f24-41df-8a25-d0957b8d50b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\misc">
+      <UniqueIdentifier>{4f351ce4-6015-4268-bc56-147338884607}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\math">
+      <UniqueIdentifier>{0a9eeebc-e8e3-42aa-9a1d-71092cf75a36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\datastruct\tree">
+      <UniqueIdentifier>{b2df8c60-3ee3-4320-bb6f-6ac285b69459}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\datastruct\heap">
+      <UniqueIdentifier>{6558ffcf-9b14-476d-8e9a-79eee302bf46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\system">
+      <UniqueIdentifier>{d05f1cb0-b87f-4e8c-bc72-522ec4154891}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\datastruct">
+      <UniqueIdentifier>{11059e8a-caf0-4cc7-9498-192bbb3c56b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\para">
+      <UniqueIdentifier>{5d55fe77-625b-4bd0-9973-514bcea72c66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\math">
+      <UniqueIdentifier>{5658d327-ec67-4784-91f2-5dd856af332a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\algo\sort">
+      <UniqueIdentifier>{34a320c6-3f19-41aa-88ff-e333b2f54b8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\algo">
+      <UniqueIdentifier>{bb06522c-6c61-4eea-b423-22ec2ed585a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\cli">
+      <UniqueIdentifier>{9ac6ad41-3f9e-4d93-89f7-372dd2c08007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\para">
+      <UniqueIdentifier>{d9b5500e-58db-428b-b2bc-9c2178723405}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\algo\clustering">
+      <UniqueIdentifier>{d3ce6c50-185a-4016-9f1a-f4cb8944b399}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\algo\clustering">
+      <UniqueIdentifier>{6c6b458b-ba0d-4222-bb6c-76ab09c2b1d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\math\regression">
+      <UniqueIdentifier>{eba4bd5d-1949-4bd2-bff9-06b0fa5b4ed0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\math\regression">
+      <UniqueIdentifier>{0872ea76-8be9-4664-b8dc-877c87452eab}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\cli\args.hpp">
+      <Filter>Header Files\cli</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\system\file.hpp">
+      <Filter>Header Files\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\system\mmap_file.hpp">
+      <Filter>Header Files\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\system\stopwatch.hpp">
+      <Filter>Header Files\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\system\filesystem.hpp">
+      <Filter>Header Files\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\misc\exception.hpp">
+      <Filter>Header Files\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\random.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\datastruct\key_value.hpp">
+      <Filter>Header Files\datastruct</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\datastruct\comparator.hpp">
+      <Filter>Header Files\datastruct</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\datastruct\heap\regular.hpp">
+      <Filter>Header Files\datastruct\heap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\datastruct\tree\winner.hpp">
+      <Filter>Header Files\datastruct\tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\datastruct\heap\looser.hpp">
+      <Filter>Header Files\datastruct\heap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\system\info.hpp">
+      <Filter>Header Files\system</Filter>
+    </ClInclude>
+    <ClInclude Include="test.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\algo\sort\std_sort.hpp">
+      <Filter>Header Files\algo\sort</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\system\file_async.hpp">
+      <Filter>Header Files\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\algo\clustering\k-medoids.hpp">
+      <Filter>Header Files\algo\clustering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\system\memory_pool.hpp">
+      <Filter>Header Files\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\system\file_pool.hpp">
+      <Filter>Header Files\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\datastruct\tree\grid_tree.hpp">
+      <Filter>Header Files\datastruct\tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\datastruct\string_index.hpp">
+      <Filter>Header Files\datastruct</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\stats.hpp">
+      <Filter>Header Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\system\hacks.hpp">
+      <Filter>Header Files\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\system\file_raw.hpp">
+      <Filter>Header Files\system</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\para\thread_pool_old.hpp">
+      <Filter>Header Files\para</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\para\thread_pool.hpp">
+      <Filter>Header Files\para</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\para\blocking_queue.hpp">
+      <Filter>Header Files\para</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\algo\edit_distance.hpp">
+      <Filter>Header Files\algo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\misc\ptr_fix.hpp">
+      <Filter>Header Files\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cli\terminal.hpp">
+      <Filter>Header Files\cli</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\algo\strings.hpp">
+      <Filter>Header Files\algo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\algo\clustering\k-means.hpp">
+      <Filter>Header Files\algo\clustering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\math\regression\linear.hpp">
+      <Filter>Header Files\math\regression</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\misc\setter.hpp">
+      <Filter>Header Files\misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\cli\logger.hpp">
+      <Filter>Header Files\cli</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\algo\lcs.hpp">
+      <Filter>Header Files\algo</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main_tests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="system\info.cpp">
+      <Filter>Source Files\system</Filter>
+    </ClCompile>
+    <ClCompile Include="datastruct\heap.cpp">
+      <Filter>Source Files\datastruct</Filter>
+    </ClCompile>
+    <ClCompile Include="math\random.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="system\file_async.cpp">
+      <Filter>Source Files\system</Filter>
+    </ClCompile>
+    <ClCompile Include="algo\clustering\k-medoids.cpp">
+      <Filter>Source Files\algo\clustering</Filter>
+    </ClCompile>
+    <ClCompile Include="system\file.cpp">
+      <Filter>Source Files\system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\stopwatch.cpp">
+      <Filter>Source Files\system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\mmap_file.cpp">
+      <Filter>Source Files\system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\memory_pool.cpp">
+      <Filter>Source Files\system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\file_pool.cpp">
+      <Filter>Source Files\system</Filter>
+    </ClCompile>
+    <ClCompile Include="system\filesystem.cpp">
+      <Filter>Source Files\system</Filter>
+    </ClCompile>
+    <ClCompile Include="datastruct\string_index.cpp">
+      <Filter>Source Files\datastruct</Filter>
+    </ClCompile>
+    <ClCompile Include="system\hacks.cpp">
+      <Filter>Source Files\system</Filter>
+    </ClCompile>
+    <ClCompile Include="para\blocking_queue.cpp">
+      <Filter>Source Files\para</Filter>
+    </ClCompile>
+    <ClCompile Include="para\thread_pool_old.cpp">
+      <Filter>Source Files\para</Filter>
+    </ClCompile>
+    <ClCompile Include="para\thread_pool.cpp">
+      <Filter>Source Files\para</Filter>
+    </ClCompile>
+    <ClCompile Include="algo\edit_distance.cpp">
+      <Filter>Source Files\algo</Filter>
+    </ClCompile>
+    <ClCompile Include="cli\terminal.cpp">
+      <Filter>Source Files\cli</Filter>
+    </ClCompile>
+    <ClCompile Include="cli\args.cpp">
+      <Filter>Source Files\cli</Filter>
+    </ClCompile>
+    <ClCompile Include="algo\strings.cpp">
+      <Filter>Source Files\algo</Filter>
+    </ClCompile>
+    <ClCompile Include="algo\clustering\k-means.cpp">
+      <Filter>Source Files\algo\clustering</Filter>
+    </ClCompile>
+    <ClCompile Include="math\regression\linear.cpp">
+      <Filter>Source Files\math\regression</Filter>
+    </ClCompile>
+    <ClCompile Include="cli\logger.cpp">
+      <Filter>Source Files\cli</Filter>
+    </ClCompile>
+    <ClCompile Include="algo\lcs.cpp">
+      <Filter>Source Files\algo</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
