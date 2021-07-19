@@ -8,7 +8,7 @@ Authors@R:
            email = "exa.exa@gmail.com",
            comment = c(ORCID = "0000-0001-7356-4075"))
 Description: What the package does (one paragraph).
-License: Apache-2.0
+License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
