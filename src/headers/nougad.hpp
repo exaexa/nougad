@@ -33,7 +33,7 @@ public:
 
 	virtual void initialize(const DataPoints<F>& points, const DataPoints<F>& spectra, const DataPoints<F>& spectraPositiveWeights,
 							const DataPoints<F>& spectraNegativeWeights, const DataPoints<F>& resultWeights, DataPoints<F>& initialResult,
-							const std::size_t iterations, const F alpha, const F acceleration)
+							DataPoints<F>& resultResiduals, const std::size_t iterations, const F alpha, const F acceleration)
 	{
 		std::size_t devices = bpp::CudaDevice::count();
 		if (devices == 0)
@@ -42,13 +42,14 @@ public:
 		}
 
 		IGradientDescendAlgorithm<F>::initialize(points, spectra, spectraPositiveWeights, spectraNegativeWeights, resultWeights, initialResult,
-											  iterations, alpha, acceleration);
+											     resultResiduals, iterations, alpha, acceleration);
 		mPoints = &points;
 		mSpectra = &spectra;
 		mSpectraPositiveWeights = &spectraPositiveWeights;
 		mSpectraNegativeWeights = &spectraNegativeWeights;
 		mResultWeights = &resultWeights;
 		this->mResult = std::move(initialResult);
+		this->mResultResiduals = std::move(resultResiduals);
 	}
 
 	void prepareInputs() override

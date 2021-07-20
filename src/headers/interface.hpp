@@ -32,7 +32,7 @@ public:
 
 	virtual void initialize(const DataPoints<F>& points, const DataPoints<F>& spectra, const DataPoints<F>& spectraPositiveWeights,
 							const DataPoints<F>& spectraNegativeWeights, const DataPoints<F>& resultWeights, DataPoints<F>& initialResult,
-							const std::size_t iterations, const F alpha, const F acceleration)
+							DataPoints<F>& resultResiduals, const std::size_t iterations, const F alpha, const F acceleration)
 	{
 		mDim = points.getDim();
 		mN = points.size();
@@ -66,8 +66,13 @@ public:
 									  << " != " << resultWeights.size() * resultWeights.getDim());
 		}
 
-		mResultResiduals.setDim(mDim);
-		mResultResiduals.resize(mN);
+		if (resultResiduals.getDim() != mDim || resultResiduals.size() != mN)
+		{
+			throw(
+				bpp::RuntimeError() << "Residuals dimension and size are different than such implied by measurement points. Residuals: "
+									<< resultResiduals.size() << "x" << resultResiduals.getDim() << "Measurements: " << points.size() << "x"
+									<< points.getDim());
+		}
 
 		mIterations = iterations;
 		mAlpha = alpha;
@@ -85,7 +90,7 @@ public:
 
 	virtual void run() = 0;
 
-	virtual const ResultT getResults() { return std::make_pair(std::ref(this->mResult), std::ref(this->mResultResiduals)); }
+	virtual const ResultT getResults() { return std::make_pair(std::ref(mResult), std::ref(mResultResiduals)); }
 
 	static const DataPoints<F>& getResult(size_t i, const ResultT& result) { return i == 0 ? result.first.get() : result.second.get(); }
 
@@ -102,9 +107,9 @@ public:
 		{
 			const auto& refResult = getResult(resultI, refResults);
 			const auto& result = getResult(resultI, results);
-			size_t N = resultI == 0 ? this->mSpectrumN : this->mDim;
+			size_t N = resultI == 0 ? mSpectrumN : mDim;
 
-			for (std::size_t p = 0; p < this->mN; ++p)
+			for (std::size_t p = 0; p < mN; ++p)
 			{
 				std::size_t i = 0;
 				while (i < N && compare_floats_relative(refResult[p][i], result[p][i]) < 0.001)
@@ -144,5 +149,5 @@ public:
 		return errors == 0;
 	}
 
-	virtual void cleanup() { mResultResiduals.clear(); }
+	virtual void cleanup() = 0;
 };

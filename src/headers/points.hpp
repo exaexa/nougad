@@ -78,7 +78,10 @@ private:
 
 
 public:
-	DataPoints(std::size_t dim = 0, std::size_t size = 0) : mDim(dim), mSize(size), mDataPtr(nullptr) { resize(size); }
+	DataPoints(std::size_t dim = 0, std::size_t size = 0, F* data = nullptr) : mDim(dim), mSize(size), mDataPtr(data) 
+	{
+		if (!data) resize(size);
+	}
 
 	std::size_t getDim() const { return mDim; }
 
