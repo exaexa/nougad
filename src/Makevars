@@ -1,34 +1,28 @@
-MYCXX=g++
-NVCC=$(CUDA_HOME)/bin/nvcc
 
-# for CUDA
-CXXSTD=$(MYCXX) -std=c++17
-# for R and C++
-CXX=$(MYCXX)
-CXX_STD=CXX17
+# use `Sys.setenv` to choose a different compute capability
+NOUGAD_CUDA_CC ?= 60
 
-PKG_LIBS= -L$(CUDA_HOME)/lib64 -Wl,-rpath,$(CUDA_HOME)/lib64 -lcudart
+CXX = $(CXX17)
 
-PKG_CPPFLAGS= -Wall -O3  -DNDEBUG -fPIC
+NVCC = nvcc -std=c++17
 
-NVCCFLAGS=-ccbin $(CXXSTD) -Xcompiler "-fPIC"
+PKG_LIBS = -lcuda -lcudart
+PKG_CPPFLAGS = -I./headers -I./bpplib/include -I./kernels
+PKG_CXXFLAGS = -Wall -O3 -DNDEBUG -fPIC
 
-INCLUDE=$(CUDA_HOME)/include $(R_INCLUDE_DIR) ./headers ./bpplib/include ./kernels
-OBJS=$(patsubst %.cpp,%.obj,$(shell find . -name '*.cpp'))
-CUOBJS=$(patsubst %.cu,%.cuobj,$(shell find ./kernels -name '*.cu'))
+NVCCFLAGS = -ccbin $(CXX17) $(PKG_CPPFLAGS) -Xcompiler "-fPIC" -gencode=arch=compute_$(NOUGAD_CUDA_CC),code=sm_$(NOUGAD_CUDA_CC)
 
-OBJECTS = $(OBJS) $(CUOBJS)
+CUDA_SOURCES = kernels/nougad.cu
+CUDA_OBJECTS = $(CUDA_SOURCES:.cu=.cuo)
 
-all : nougad.so
+CXX_SOURCES = nougad.cpp
+CXX_OBJECTS = $(CXX_SOURCES:.cpp=.o)
+
+OBJECTS = $(CXX_OBJECTS) $(CUDA_OBJECTS)
+
+all: nougad.so
 
 nougad.so: $(OBJECTS)
 
-%.obj: %.cpp 
-	$(CXX) $(PKG_CPPFLAGS) $(addprefix -I,$(INCLUDE)) -c $< -o $@
-
-%.cuobj: %.cu cuda_arch
-	$(NVCC) $(NVCCFLAGS) $(shell ./cuda_arch) $(addprefix -I,$(INCLUDE)) --compile -cudart static $< -o $@
-
-cuda_arch:
-	$(NVCC) -lcuda cuda_arch.cu -o cuda_arch
-	./cuda_arch; echo
+%.cuo: %.cu
+	$(NVCC) $(NVCCFLAGS) --compile -cudart static $< -o $@
