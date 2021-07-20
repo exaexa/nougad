@@ -17,15 +17,15 @@ void nougad_c(const int* n, const int* dim, const int* spectraN, const int* iter
 	}
 
 	GradientDescendCudaAlgorithm<float, NougadBaseSharedKernel<float>> algorithm(exec);
-	DataPoints<float> measurements(*dim, *n);
-	DataPoints<float> spectra(*dim, *spectraN);
-	DataPoints<float> spectraPW(*dim, *spectraN);
-	DataPoints<float> spectraNW(*dim, *spectraN);
-	DataPoints<float> resultNW(*spectraN, 1);
-	DataPoints<float> resultsInitial(*spectraN, *n);
-	DataPoints<float> residuals(*dim, *n);
+	DataPoints<float> measurements(*dim, *n, const_cast<float*>(y_dn));
+	DataPoints<float> spectra(*dim, *spectraN, const_cast<float*>(s_dk));
+	DataPoints<float> spectraPW(*dim, *spectraN, const_cast<float*>(spw_dk));
+	DataPoints<float> spectraNW(*dim, *spectraN, const_cast<float*>(snw_dk));
+	DataPoints<float> resultNW(*spectraN, 1, const_cast<float*>(nw_k));
+	DataPoints<float> resultsInitial(*spectraN, *n, x_kn);
+	DataPoints<float> residuals(*dim, *n, r_dn);
 
-	algorithm.initialize(measurements, spectra, spectraPW, spectraNW, resultNW, resultsInitial, *iterations, *alpha, *acceleration);
+	algorithm.initialize(measurements, spectra, spectraPW, spectraNW, resultNW, resultsInitial, residuals, *iterations, *alpha, *acceleration);
 
 	algorithm.run();
 	(void)algorithm.getResults();
