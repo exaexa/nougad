@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include "interface.hpp"
-#include "unmixscent.cuh"
+#include "nougad.cuh"
 #include <cuda/cuda.hpp>
 
 /**

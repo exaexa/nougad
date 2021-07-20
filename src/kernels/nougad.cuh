@@ -3,7 +3,7 @@
 #include "structs.cuh"
 
 
-#define DECLARE_UNMIXSCENT_KERNEL(NAME)                                                                                                                      \
+#define DECLARE_NOUGAD_KERNEL(NAME)                                                                                                                  \
 	template <typename F>                                                                                                                            \
 	class NAME                                                                                                                                       \
 	{                                                                                                                                                \
@@ -11,5 +11,5 @@
 		static void run(const GradientDescendProblemInstance<F>& in, CudaExecParameters& exec);                                                      \
 	};
 
-DECLARE_UNMIXSCENT_KERNEL(UnmixscentBaseKernel)
-DECLARE_UNMIXSCENT_KERNEL(UnmixscentBaseSharedKernel)
+DECLARE_NOUGAD_KERNEL(NougadBaseKernel)
+DECLARE_NOUGAD_KERNEL(NougadBaseSharedKernel)

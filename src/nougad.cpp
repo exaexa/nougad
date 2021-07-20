@@ -2,7 +2,7 @@
 #include <R_ext/Rdynload.h>
 #include <Rmath.h>
 
-#include "unmixscent-cuda.hpp"
+#include "nougad.hpp"
 
 void nougad_c(const int* n, const int* dim, const int* spectraN, const int* iterations, const float* alpha, const float* acceleration,
 			  const float* s_dk, const float* spw_dk, const float* snw_dk, const float* nw_k, const float* y_dn, float* x_kn, float* r_dn)
@@ -16,7 +16,7 @@ void nougad_c(const int* n, const int* dim, const int* spectraN, const int* iter
 		exec.sharedMemorySize = (unsigned int)props.sharedMemPerBlock;
 	}
 
-	GradientDescendCudaAlgorithm<float, UnmixscentBaseSharedKernel<float>> algorithm(exec);
+	GradientDescendCudaAlgorithm<float, NougadBaseSharedKernel<float>> algorithm(exec);
 	DataPoints<float> measurements(*dim, *n);
 	DataPoints<float> spectra(*dim, *spectraN);
 	DataPoints<float> spectraPW(*dim, *spectraN);

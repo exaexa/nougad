@@ -1,17 +1,20 @@
-CXX=g++
-NVCC=/usr/local/cuda/bin/nvcc
+CUDA_HOME=/usr/local/cuda
+
+CPP=g++
+NVCC=$(CUDA_HOME)/bin/nvcc
 
 # for CUDA
-CXXSTD=g++ -std=c++17
-# for R
+CXXSTD=$(CPP) -std=c++17
+# for R and C++
+CXX=$(CPP)
 CXX_STD=CXX17
 
-PKG_LIBS= -L/usr/local/cuda/lib64 -Wl,-rpath,/usr/local/cuda/lib64 -lcudart
+PKG_LIBS= -L$(CUDA_HOME)/lib64 -Wl,-rpath,$(CUDA_HOME)/lib64 -lcudart
 
 PKG_CPPFLAGS= -Wall -O3  -DNDEBUG -fPIC
 NVCCFLAGS=-ccbin $(CXXSTD) -arch=sm_60 -Xcompiler "-fPIC"
 
-INCLUDE=/usr/local/cuda/include ./headers ./bpplib/include /usr/share/R/include
+INCLUDE=$(CUDA_HOME)/include /usr/share/R/include ./headers ./bpplib/include ./kernels
 OBJS=$(patsubst %.cpp,%.obj,$(shell find . -name '*.cpp')) $(patsubst %.cc,%.o,$(shell find . -name '*.cc'))
 CUOBJS=$(patsubst %.cu,%.cuobj,$(shell find . -name '*.cu'))
 

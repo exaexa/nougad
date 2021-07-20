@@ -8,7 +8,7 @@
 #include "cooperative_groups.h"
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-#include "unmixscent.cuh"
+#include "nougad.cuh"
 
 namespace cg = cooperative_groups;
 
@@ -29,7 +29,7 @@ __inline__ __device__ void computeResiduals(const F* const __restrict__ points, 
  * Each thread performs descent for one point.
  */
 template <typename F>
-__global__ void unmixscentBaseKernel(const F* __restrict__ points, const F* const __restrict__ spectra,
+__global__ void nougadBaseKernel(const F* __restrict__ points, const F* const __restrict__ spectra,
 									 const F* const __restrict__ spectraPositiveWeights, const F* const __restrict__ spectraNegativeWeights,
 									 const F* const __restrict__ resultWeights, F* __restrict__ result, F* __restrict__ resultResiduals,
 									 F* __restrict__ gradientMemory, const std::uint32_t dim, const std::uint32_t n, const std::uint32_t spectrumN,
@@ -73,10 +73,10 @@ __global__ void unmixscentBaseKernel(const F* __restrict__ points, const F* cons
 
 // runner wrapped in a class
 template <typename F>
-void UnmixscentBaseKernel<F>::run(const GradientDescendProblemInstance<F>& in, CudaExecParameters& exec)
+void NougadBaseKernel<F>::run(const GradientDescendProblemInstance<F>& in, CudaExecParameters& exec)
 {
 	unsigned int blockCount = (in.n + exec.blockSize - 1) / exec.blockSize;
-	unmixscentBaseKernel<F><<<blockCount, exec.blockSize>>>(in.points, in.spectra, in.spectraPositiveWeights, in.spectraNegativeWeights,
+	nougadBaseKernel<F><<<blockCount, exec.blockSize>>>(in.points, in.spectra, in.spectraPositiveWeights, in.spectraNegativeWeights,
 															in.resultWeights, in.result, in.resultResiduals, in.gradientMemory, in.dim, in.n,
 															in.spectrumN, in.iterations, in.alpha, in.acceleration);
 }
@@ -86,7 +86,7 @@ void UnmixscentBaseKernel<F>::run(const GradientDescendProblemInstance<F>& in, C
  * Common arrays are stored to shared memory.
  */
 template <typename F>
-__global__ void unmixscentBaseSharedKernel(const F* __restrict__ points, const F* const __restrict__ spectra,
+__global__ void nougadBaseSharedKernel(const F* __restrict__ points, const F* const __restrict__ spectra,
 										   const F* const __restrict__ spectraPositiveWeights, const F* const __restrict__ spectraNegativeWeights,
 										   const F* const __restrict__ resultWeights, F* __restrict__ result, F* __restrict__ resultResiduals,
 										   F* __restrict__ gradientMemory, const std::uint32_t dim, const std::uint32_t n,
@@ -153,13 +153,13 @@ __global__ void unmixscentBaseSharedKernel(const F* __restrict__ points, const F
 
 // runner wrapped in a class
 template <typename F>
-void UnmixscentBaseSharedKernel<F>::run(const GradientDescendProblemInstance<F>& in, CudaExecParameters& exec)
+void NougadBaseSharedKernel<F>::run(const GradientDescendProblemInstance<F>& in, CudaExecParameters& exec)
 {
 	unsigned int blockCount = (in.n + exec.blockSize - 1) / exec.blockSize;
 	unsigned int sharedMemory =
 		(3 * (in.dim * in.spectrumN) + in.spectrumN) * sizeof(F) + exec.blockSize * sizeof(F) * (in.spectrumN + in.dim + in.spectrumN);
 
-	unmixscentBaseSharedKernel<F><<<blockCount, exec.blockSize, sharedMemory>>>(
+	nougadBaseSharedKernel<F><<<blockCount, exec.blockSize, sharedMemory>>>(
 		in.points, in.spectra, in.spectraPositiveWeights, in.spectraNegativeWeights, in.resultWeights, in.result, in.resultResiduals,
 		in.gradientMemory, in.dim, in.n, in.spectrumN, in.iterations, in.alpha, in.acceleration);
 }
@@ -174,8 +174,8 @@ void instantiateKernelRunnerTemplates()
 	GradientDescendProblemInstance<F> instance(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, 0, 0, 0, 0, 0, 0);
 	CudaExecParameters exec;
 
-	UnmixscentBaseKernel<F>::run(instance, exec);
-	UnmixscentBaseSharedKernel<F>::run(instance, exec);
+	NougadBaseKernel<F>::run(instance, exec);
+	NougadBaseSharedKernel<F>::run(instance, exec);
 }
 
 template void instantiateKernelRunnerTemplates<float>();
