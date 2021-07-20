@@ -1,22 +1,21 @@
-CUDA_HOME=/usr/local/cuda
-
-CPP=g++
+MYCXX=g++
 NVCC=$(CUDA_HOME)/bin/nvcc
 
 # for CUDA
-CXXSTD=$(CPP) -std=c++17
+CXXSTD=$(MYCXX) -std=c++17
 # for R and C++
-CXX=$(CPP)
+CXX=$(MYCXX)
 CXX_STD=CXX17
 
 PKG_LIBS= -L$(CUDA_HOME)/lib64 -Wl,-rpath,$(CUDA_HOME)/lib64 -lcudart
 
 PKG_CPPFLAGS= -Wall -O3  -DNDEBUG -fPIC
-NVCCFLAGS=-ccbin $(CXXSTD) -arch=sm_60 -Xcompiler "-fPIC"
 
-INCLUDE=$(CUDA_HOME)/include /usr/share/R/include ./headers ./bpplib/include ./kernels
-OBJS=$(patsubst %.cpp,%.obj,$(shell find . -name '*.cpp')) $(patsubst %.cc,%.o,$(shell find . -name '*.cc'))
-CUOBJS=$(patsubst %.cu,%.cuobj,$(shell find . -name '*.cu'))
+NVCCFLAGS=-ccbin $(CXXSTD) -Xcompiler "-fPIC"
+
+INCLUDE=$(CUDA_HOME)/include $(R_INCLUDE_DIR) ./headers ./bpplib/include ./kernels
+OBJS=$(patsubst %.cpp,%.obj,$(shell find . -name '*.cpp'))
+CUOBJS=$(patsubst %.cu,%.cuobj,$(shell find ./kernels -name '*.cu'))
 
 OBJECTS = $(OBJS) $(CUOBJS)
 
@@ -27,5 +26,9 @@ nougad.so: $(OBJECTS)
 %.obj: %.cpp 
 	$(CXX) $(PKG_CPPFLAGS) $(addprefix -I,$(INCLUDE)) -c $< -o $@
 
-%.cuobj: %.cu 
-	$(NVCC) $(NVCCFLAGS) $(addprefix -I,$(INCLUDE)) --compile -cudart static $< -o $@
+%.cuobj: %.cu cuda_arch
+	$(NVCC) $(NVCCFLAGS) $(shell ./cuda_arch) $(addprefix -I,$(INCLUDE)) --compile -cudart static $< -o $@
+
+cuda_arch:
+	$(NVCC) -lcuda cuda_arch.cu -o cuda_arch
+	./cuda_arch
