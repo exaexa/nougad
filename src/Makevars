@@ -31,4 +31,4 @@ nougad.so: $(OBJECTS)
 
 cuda_arch:
 	$(NVCC) -lcuda cuda_arch.cu -o cuda_arch
-	./cuda_arch
+	./cuda_arch; echo
