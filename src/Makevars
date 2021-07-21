@@ -2,16 +2,15 @@
 # use `Sys.setenv` to choose a different compute capability
 NOUGAD_CUDA_CC ?= 60
 
-CXX = $(CXX17)
+CXX_STD = CXX17
 
 NVCC = nvcc -std=c++17
 
 PKG_LIBS = $(shell pkg-config cuda --libs) -lcudart
-PKG_CPPFLAGS = -I./headers -I./bpplib/include -I./kernels
+PKG_CPPFLAGS = -I./headers -I./bpplib/include -I./kernels $(shell pkg-config cuda --cflags)
 PKG_CXXFLAGS = -Wall -O3 -DNDEBUG -fPIC
 
-CUDA_CFLAGS = $(shell pkg-config cuda --cflags)
-NVCCFLAGS = -ccbin $(CXX17) $(CUDA_CFLAGS) $(PKG_CPPFLAGS) -Xcompiler "-fPIC" -gencode=arch=compute_$(NOUGAD_CUDA_CC),code=sm_$(NOUGAD_CUDA_CC)
+NVCCFLAGS = -ccbin $(CXX17) $(PKG_CPPFLAGS) -Xcompiler "-fPIC" -gencode=arch=compute_$(NOUGAD_CUDA_CC),code=sm_$(NOUGAD_CUDA_CC)
 
 CUDA_SOURCES = kernels/nougad.cu
 CUDA_OBJECTS = $(CUDA_SOURCES:.cu=.cuo)
