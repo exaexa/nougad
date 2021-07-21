@@ -26,6 +26,7 @@ extern "C" void nougad_c(const int* n, const int* dim, const int* spectraN, cons
 	DataPoints<float> residuals(*dim, *n, r_dn);
 
 	algorithm.initialize(measurements, spectra, spectraPW, spectraNW, resultNW, resultsInitial, residuals, *iterations, *alpha, *acceleration);
+	algorithm.prepareInputs();
 
 	algorithm.run();
 	(void)algorithm.getResults();
