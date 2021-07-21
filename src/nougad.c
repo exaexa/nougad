@@ -4,30 +4,30 @@
 #include <Rmath.h>
 
 void
-nougad_c(const int* np,
-      const int* dp,
-      const int* kp,
-      const int* itersp,
-      const float* alphap,
-      const float* accelp,
-      const float* s_dk,
-      const float* spw_dk,
-      const float* snw_dk,
-      const float* nw_k,
-      const float* y_dn,
-      float* x_kn,
-      float* r_dn)
+nougad_c(const int *np,
+         const int *dp,
+         const int *kp,
+         const int *itersp,
+         const float *alphap,
+         const float *accelp,
+         const float *s_dk,
+         const float *spw_dk,
+         const float *snw_dk,
+         const float *nw_k,
+         const float *y_dn,
+         float *x_kn,
+         float *r_dn)
 {
   const size_t n = *np, d = *dp, k = *kp, iters = *itersp;
   const float alpha = *alphap, accel = *accelp;
   size_t ni, di, ki, ii;
 
-  float* lastg_k = malloc(sizeof(float) * k);
+  float *lastg_k = malloc(sizeof(float) * k);
 
   for (ni = 0; ni < n; ++ni) {
-    float* restrict x_k = x_kn + ni * k;
-    float* restrict r_d = r_dn + ni * d;
-    const float* restrict y_d = y_dn + ni * d;
+    float *restrict x_k = x_kn + ni * k;
+    float *restrict r_d = r_dn + ni * d;
+    const float *restrict y_d = y_dn + ni * d;
 
     for (ki = 0; ki < k; ++ki)
       lastg_k[ki] = 0;
@@ -64,7 +64,7 @@ static const R_CMethodDef cMethods[] = { { "nougad_c", (DL_FUNC)&nougad_c, 13 },
                                          { NULL, NULL, 0 } };
 
 void
-R_init_nougad(DllInfo* info)
+R_init_nougad(DllInfo *info)
 {
   R_registerRoutines(info, cMethods, NULL, NULL, NULL);
   R_useDynamicSymbols(info, FALSE);
