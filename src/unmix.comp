@@ -48,7 +48,7 @@ main()
   uint ni = gl_GlobalInvocationID.x;
   float lastg_k[k], g_k[k];
   float tmp;
-  if (ni > params.n)
+  if (ni >= params.n)
     return;
 
   for (uint ki = 0; ki < k; ++ki)
