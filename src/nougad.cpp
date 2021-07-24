@@ -78,18 +78,20 @@ struct transposed
     using value_type = T;
     using reference = T &;
 
-    size_t off;
+    size_t off, end;
     transposed base;
     tr_iter(size_t off, transposed base)
       : off(off)
+      , end(off + base.a * base.b)
       , base(base)
     {}
 
     inline reference operator*() const
     {
+      static T dummy = 0;
       const size_t blk = off / base.b;
       const size_t item = off % base.b;
-      return base.ptr[blk + base.a * item];
+      return off < end ? base.ptr[blk + base.a * item] : dummy;
     }
 
     tr_iter &operator++()
