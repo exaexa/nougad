@@ -80,20 +80,18 @@ struct transposed
     using value_type = T;
     using reference = T &;
 
-    size_t off, end;
+    size_t off;
     transposed base;
     tr_iter(size_t off, transposed base)
       : off(off)
-      , end(off + base.a * base.b)
       , base(base)
     {}
 
     inline reference operator*() const
     {
-      static T dummy = 0;
       const size_t blk = off / base.b;
       const size_t item = off % base.b;
-      return off < end ? base.ptr[blk + base.a * item] : dummy;
+      return base.ptr[blk + base.a * item];
     }
 
     tr_iter &operator++()
@@ -141,7 +139,8 @@ nougad_c(const int *np,
   vuh::Array<float> vu_s_kd(device, k * d), vu_spw_kd(device, k * d),
     vu_snw_kd(device, k * d), vu_nw_k(device, k);
 
-  // we're doing partial fills on these (vuh crashes if they're not host visible)
+  // we're doing partial fills on these (vuh crashes if they're not host
+  // visible)
   vuh::Array<float, vuh::mem::Host> vu_y_nd(device, batch_size * d),
     vu_x_nk(device, batch_size * k), vu_r_nd(device, batch_size * d);
 
