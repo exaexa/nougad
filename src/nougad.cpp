@@ -115,6 +115,8 @@ struct transposed
  * nougad entrypoint
  */
 
+#include <iostream>
+
 extern "C" void
 nougad_c(const int *np,
          const int *dp,
@@ -139,10 +141,13 @@ nougad_c(const int *np,
   vuh::Array<float> vu_s_kd(device, k * d), vu_spw_kd(device, k * d),
     vu_snw_kd(device, k * d), vu_nw_k(device, k);
 
-  // we're doing partial fills on these (vuh crashes if they're not host
-  // visible)
-  vuh::Array<float, vuh::mem::Host> vu_y_nd(device, batch_size * d),
-    vu_x_nk(device, batch_size * k), vu_r_nd(device, batch_size * d);
+  vuh::Array<float, vuh::mem::Host>
+    vu_Cy_nd(device, batch_size * d),
+    vu_Ty_nd(device, batch_size * d),
+    vu_Cx_nk(device, batch_size * k),
+    vu_Tx_nk(device, batch_size * k),
+    vu_Cr_nd(device, batch_size * d),
+    vu_Tr_nd(device, batch_size * d);
 
   vu_s_kd.fromHost(transposed(s_dk, d, k).begin(),
                    transposed(s_dk, d, k).end());
@@ -168,29 +173,73 @@ nougad_c(const int *np,
   auto program =
     vuh::Program<Specs, Params>(device, sizeof(spirv_unmix), spirv_unmix);
 
-  for (size_t batch_off = 0; batch_off < n; batch_off += batch_size) {
-    size_t local_n = std::min(batch_size, n - batch_off);
+  size_t n_batches = vuh::div_up(n, batch_size);
 
+  if(!n_batches) return; //why tho.
+
+  auto boff = [&](size_t bi) -> size_t { return bi*batch_size; };
+  auto bsz = [&](size_t bi) -> size_t { return std::min(batch_size, n-boff(bi)); };
+
+  auto prep_batch = [&](size_t bi) -> void {
+    std::cout << "preparing batch " << bi << std::endl;
+    size_t local_n = bsz(bi);
+    size_t batch_off = boff(bi);
     auto xv = transposed(x_kn + k * batch_off, k, local_n);
     auto yv = transposed(y_dn + d * batch_off, d, local_n);
+
+    std::copy(xv.begin(), xv.end(), vu_Tx_nk.begin());
+    std::copy(yv.begin(), yv.end(), vu_Ty_nd.begin());
+    std::cout << "done preparing batch " << bi << std::endl;
+  };
+
+  auto collect_batch = [&](size_t bi) -> void {
+    std::cout << "collecting batch " << bi << std::endl;
+    size_t local_n = bsz(bi);
+    size_t batch_off = boff(bi);
+    auto xv = transposed(x_kn + k * batch_off, k, local_n);
     auto rv = transposed(r_dn + d * batch_off, d, local_n);
 
-    std::copy(xv.begin(), xv.end(), vu_x_nk.begin());
-    std::copy(yv.begin(), yv.end(), vu_y_nd.begin());
+    std::copy(vu_Tx_nk.begin(), vu_Tx_nk.begin() + xv.size(), xv.begin());
+    std::copy(vu_Tr_nd.begin(), vu_Tr_nd.begin() + rv.size(), rv.begin());
+    std::cout << "done collecting batch " << bi << std::endl;
+  };
 
-    program.grid(vuh::div_up(local_n, local_size))
-      .spec(local_size, k, d, iters)({ uint32_t(local_n), alpha, accel },
+  /* run the batchwork */
+  prep_batch(0);
+  for (size_t bi = 0; bi < n_batches; ++bi) {
+    size_t local_n = bsz(bi);
+    
+    std::cout << "swapping data for batch " << bi << std::endl;
+    // swap buffers
+    vu_Cx_nk.swap(vu_Tx_nk);
+    vu_Cy_nd.swap(vu_Ty_nd);
+    vu_Cr_nd.swap(vu_Tr_nd);
+
+    { 
+    std::cout << "starting for batch " << bi << std::endl;
+
+    auto compute_token = program.grid(vuh::div_up(local_n, local_size))
+      .spec(local_size, k, d, iters)
+      .run_async({ uint32_t(local_n), alpha, accel },
                                      vu_s_kd,
                                      vu_spw_kd,
                                      vu_snw_kd,
                                      vu_nw_k,
-                                     vu_y_nd,
-                                     vu_x_nk,
-                                     vu_r_nd);
+                                     vu_Cy_nd,
+                                     vu_Cx_nk,
+                                     vu_Cr_nd);
 
-    std::copy(vu_x_nk.begin(), vu_x_nk.begin() + xv.size(), xv.begin());
-    std::copy(vu_r_nd.begin(), vu_r_nd.begin() + rv.size(), rv.begin());
+    if (bi>0) collect_batch(bi-1);
+    if (bi+1<n_batches) prep_batch(bi+1);
+    std::cout << "waiting for batch " << bi << std::endl;
+    }
+    std::cout << "finished batch " << bi << std::endl;
   }
+
+  vu_Cx_nk.swap(vu_Tx_nk);
+  vu_Cr_nd.swap(vu_Tr_nd);
+
+  collect_batch(n_batches-1);
 }
 
 /*
