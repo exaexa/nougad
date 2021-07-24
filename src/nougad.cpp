@@ -10,8 +10,8 @@
 
 #include "unmix.comph"
 
-const size_t batch_size = 10240;
 const size_t local_size = 64;
+const size_t batch_size = 5120;
 
 /*
  * fancy iterator for feeding in the pre-multiplied residual weights
@@ -70,6 +70,8 @@ struct transposed
     , a(a)
     , b(b)
   {}
+
+  size_t size() const { return a * b; }
 
   struct tr_iter
   {
@@ -137,9 +139,11 @@ nougad_c(const int *np,
   auto device = instance.devices().at(0); // TODO parametrize
 
   vuh::Array<float> vu_s_kd(device, k * d), vu_spw_kd(device, k * d),
-    vu_snw_kd(device, k * d), vu_nw_k(device, k),
-    vu_y_nd(device, batch_size * d), vu_x_nk(device, batch_size * k),
-    vu_r_nd(device, batch_size * d);
+    vu_snw_kd(device, k * d), vu_nw_k(device, k);
+
+  // we're doing partial fills on these (vuh crashes if they're not host visible)
+  vuh::Array<float, vuh::mem::Host> vu_y_nd(device, batch_size * d),
+    vu_x_nk(device, batch_size * k), vu_r_nd(device, batch_size * d);
 
   vu_s_kd.fromHost(transposed(s_dk, d, k).begin(),
                    transposed(s_dk, d, k).end());
@@ -172,8 +176,8 @@ nougad_c(const int *np,
     auto yv = transposed(y_dn + d * batch_off, d, local_n);
     auto rv = transposed(r_dn + d * batch_off, d, local_n);
 
-    vu_x_nk.fromHost(xv.begin(), xv.end());
-    vu_y_nd.fromHost(yv.begin(), yv.end());
+    std::copy(xv.begin(), xv.end(), vu_x_nk.begin());
+    std::copy(yv.begin(), yv.end(), vu_y_nd.begin());
 
     program.grid(vuh::div_up(local_n, local_size))
       .spec(local_size, k, d, iters)({ uint32_t(local_n), alpha, accel },
@@ -185,8 +189,8 @@ nougad_c(const int *np,
                                      vu_x_nk,
                                      vu_r_nd);
 
-    vu_x_nk.toHost(xv.begin());
-    vu_r_nd.toHost(rv.begin());
+    std::copy(vu_x_nk.begin(), vu_x_nk.begin() + xv.size(), xv.begin());
+    std::copy(vu_r_nd.begin(), vu_r_nd.begin() + rv.size(), rv.begin());
   }
 }
 
