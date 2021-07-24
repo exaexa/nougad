@@ -16,7 +16,8 @@ devtools::install_github("exaexa/nougad")
 ```
 
 After that, either use the function from PanelBuilder, or read the
-documentation using `?nougad`.
+documentation using `?nougad`. A simple benchmarking and testing tool is ready
+in function `nougad.benchmark`.
 
 ## Accelerated variants
 
@@ -33,15 +34,18 @@ Install with:
 devtools::install_github('exaexa/nougad', ref='vulkan')
 ```
 
-You may need to set the Vulkan device that nougad should use (devices are
-indexed from 0):
-```r
-options(nougad.vulkan.device = 1)
-```
-
 ### CUDA
 
-TBD
+CUDA version is installed just as the Vulkan version, using the proper branch
+from the repository:
+
+```r
+devtools::install_github('exaexa/nougad', ref='cuda')
+```
+
+You will need a working CUDA compiler (`nvcc`) for the installation to work;
+usually it is sufficient to install the nVidia CUDA toolkit (on debians and
+ubuntus, it is in the package `nvidia-cuda-toolkit`).
 
 ## Why non-linear weighted unmixing?
 
