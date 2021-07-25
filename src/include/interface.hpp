@@ -5,9 +5,9 @@
 #include <iostream>
 #include <vector>
 
+#include "exception.hpp"
 #include "points.hpp"
 #include "structs.cuh"
-#include "exception.hpp"
 
 template<typename F>
 using DataPointsRef = std::reference_wrapper<DataPoints<F>>;

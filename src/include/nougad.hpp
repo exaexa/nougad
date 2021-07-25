@@ -2,9 +2,9 @@
 
 #include <algorithm>
 
+#include "cuda.hpp"
 #include "interface.hpp"
 #include "nougad.cuh"
-#include "cuda.hpp"
 
 /**
  * Serial implementation of GradientDescend algorithm.

@@ -1,4 +1,4 @@
-﻿#ifdef __INTELLISENSE__
+#ifdef __INTELLISENSE__
 #define __CUDACC__
 #endif
 

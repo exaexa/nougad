@@ -6,8 +6,8 @@
 #ifndef BPPLIB_CUDA_CUDA_HPP
 #define BPPLIB_CUDA_CUDA_HPP
 
-#include <cuda_runtime.h>
 #include "exception.hpp"
+#include <cuda_runtime.h>
 
 #include <algorithm>
 #include <vector>
