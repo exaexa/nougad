@@ -1,6 +1,6 @@
 
 # use `Sys.setenv` to choose a different compute capability
-NOUGAD_GPU_ARCHS = 60 61 70 75 80 86
+NOUGAD_GPU_ARCHS ?= 60 61 70 75 80 86
 
 CXX_STD = CXX17
 
