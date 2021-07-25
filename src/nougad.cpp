@@ -28,7 +28,7 @@ nougad_c(const int *n,
     exec.sharedMemorySize = (unsigned int)props.sharedMemPerBlock;
   }
 
-  GradientDescendCudaAlgorithm<float, NougadBaseSharedKernel<float>> algorithm(
+  GradientDescentCudaAlgorithm<float, NougadGroupSharedKernel<float>> algorithm(
     exec);
   DataPoints<float> measurements(*dim, *n, const_cast<float *>(y_dn));
   DataPoints<float> spectra(*dim, *spectraN, const_cast<float *>(s_dk));
