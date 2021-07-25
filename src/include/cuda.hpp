@@ -7,7 +7,7 @@
 #define BPPLIB_CUDA_CUDA_HPP
 
 #include <cuda_runtime.h>
-#include <misc/exception.hpp>
+#include "exception.hpp"
 
 #include <algorithm>
 #include <vector>

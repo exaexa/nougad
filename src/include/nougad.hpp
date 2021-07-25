@@ -4,7 +4,7 @@
 
 #include "interface.hpp"
 #include "nougad.cuh"
-#include <cuda/cuda.hpp>
+#include "cuda.hpp"
 
 /**
  * Serial implementation of GradientDescend algorithm.

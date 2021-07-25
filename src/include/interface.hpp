@@ -7,7 +7,7 @@
 
 #include "points.hpp"
 #include "structs.cuh"
-#include <misc/exception.hpp>
+#include "exception.hpp"
 
 template<typename F>
 using DataPointsRef = std::reference_wrapper<DataPoints<F>>;

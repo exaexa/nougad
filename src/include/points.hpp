@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include <misc/exception.hpp>
+#include "exception.hpp"
 
 template<typename F = float>
 double

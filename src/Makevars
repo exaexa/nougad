@@ -7,7 +7,7 @@ CXX_STD = CXX17
 NVCC = nvcc -std=c++17
 
 PKG_LIBS = $(shell pkg-config cuda --libs) -lcudart
-PKG_CPPFLAGS = -I./headers -I./bpplib/include -I./kernels $(shell pkg-config cuda --cflags)
+PKG_CPPFLAGS = -I./include -I./kernels $(shell pkg-config cuda --cflags)
 PKG_CXXFLAGS = -Wall -O3 -DNDEBUG -fPIC
 
 NVCCFLAGS = -ccbin $(CXX17) $(PKG_CPPFLAGS) -Xcompiler "-fPIC" -gencode=arch=compute_$(NOUGAD_CUDA_CC),code=sm_$(NOUGAD_CUDA_CC)
