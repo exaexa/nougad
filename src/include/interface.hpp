@@ -16,7 +16,7 @@ using DataPointsRef = std::reference_wrapper<DataPoints<F>>;
  * Interface (base class) for all ESOM algorithms.
  */
 template<typename F = float>
-class IGradientDescendAlgorithm
+class IGradientDescentAlgorithm
 {
 protected:
   std::size_t mDim, mN, mSpectrumN, mIterations;
@@ -26,7 +26,7 @@ protected:
 public:
   using ResultT = std::pair<DataPointsRef<F>, DataPointsRef<F>>;
 
-  IGradientDescendAlgorithm()
+  IGradientDescentAlgorithm()
     : mDim(0)
     , mN(0)
     , mSpectrumN(0)
@@ -37,7 +37,7 @@ public:
     , mResult(0)
   {}
 
-  virtual ~IGradientDescendAlgorithm() {}
+  virtual ~IGradientDescentAlgorithm() {}
 
   virtual void initialize(const DataPoints<F> &points,
                           const DataPoints<F> &spectra,
@@ -124,7 +124,7 @@ public:
     return i == 0 ? result.first.get() : result.second.get();
   }
 
-  bool verifyResult(IGradientDescendAlgorithm<F> &refAlgorithm,
+  bool verifyResult(IGradientDescentAlgorithm<F> &refAlgorithm,
                     std::ostream &out)
   {
     refAlgorithm.prepareInputs();

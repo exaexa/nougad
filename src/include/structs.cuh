@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cuda_runtime.h>
 
 /**
  * Common CUDA kernel execution parameters. Each kernel runner may interpret
@@ -16,17 +17,20 @@ public:
                                   // the kernel employs it)
   std::uint32_t itemsPerThread;   // affects workload division among the threads
   std::uint32_t regsCache; // affects size of the data cached in registers
+  cudaStream_t stream;
 
   CudaExecParameters(unsigned int _blockSize = 256,
                      unsigned int _sharedMemorySize = 0,
                      std::uint32_t _privatizedCopies = 1,
                      std::uint32_t _itemsPerThread = 1,
-                     std::uint32_t _regsCache = 1)
+                     std::uint32_t _regsCache = 1,
+                     cudaStream_t _stream = (cudaStream_t)0)
     : blockSize(_blockSize)
     , sharedMemorySize(_sharedMemorySize)
     , privatizedCopies(_privatizedCopies)
     , itemsPerThread(_itemsPerThread)
     , regsCache(_regsCache)
+    , stream(_stream)
   {}
 };
 
@@ -35,7 +39,7 @@ public:
  * buffers) required for kernel execution.
  */
 template<typename F>
-struct GradientDescendProblemInstance
+struct GradientDescentProblemInstance
 {
   const F *points;
   const F *spectra;
@@ -54,7 +58,7 @@ struct GradientDescendProblemInstance
   // optional
   F *gradientMemory;
 
-  GradientDescendProblemInstance(const F *points,
+  GradientDescentProblemInstance(const F *points,
                                  const F *spectra,
                                  const F *spectraPositiveWeights,
                                  const F *spectraNegativeWeights,

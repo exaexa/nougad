@@ -7,31 +7,57 @@
 #include "nougad.cuh"
 
 /**
- * Serial implementation of GradientDescend algorithm.
+ * Serial implementation of GradientDescent algorithm.
  */
 template<typename F, class KERNEL>
-class GradientDescendCudaAlgorithm : public IGradientDescendAlgorithm<F>
+class GradientDescentCudaAlgorithm : public IGradientDescentAlgorithm<F>
 {
 protected:
-  bpp::CudaBuffer<F> mCuPoints, mCuSpectra, mCuSpectraPositiveWeights,
-    mCuSpectraNegativeWeights, mCuResultWeights, mCuResultResiduals, mCuResult,
-    mCuGradientMemory;
+  static constexpr std::size_t problemBatchSize = 1024 * 20;
+
+  bpp::CudaBuffer<F> mCuSpectra, mCuSpectraPositiveWeights,
+    mCuSpectraNegativeWeights, mCuResultWeights;
+  bpp::HostBuffer<F> mHostPoints, mHostInitialResults;
+
+  struct StreamContextT
+  {
+    bpp::CudaBuffer<F> mCuPoints, mCuResult, mCuResultResiduals;
+    bpp::CudaStream mStream;
+
+    StreamContextT()
+      : mStream(0)
+    {}
+
+    void initialize(std::size_t dim, std::size_t spectraN)
+    {
+      mCuPoints.realloc(problemBatchSize * dim);
+
+      mCuResult.realloc(problemBatchSize * spectraN);
+      mCuResultResiduals.realloc(problemBatchSize * dim);
+    }
+    ~StreamContextT()
+    {
+      mCuPoints.free();
+      mCuResult.free();
+      mCuResultResiduals.free();
+    }
+  };
+
+  StreamContextT streamContext[2];
 
 private:
   CudaExecParameters &mCudaExec;
   const DataPoints<F> *mPoints, *mSpectra, *mSpectraPositiveWeights,
     *mSpectraNegativeWeights, *mResultWeights;
-  bool mResultsLoaded;
 
 public:
-  GradientDescendCudaAlgorithm(CudaExecParameters &cudaExec)
+  GradientDescentCudaAlgorithm(CudaExecParameters &cudaExec)
     : mCudaExec(cudaExec)
     , mPoints(nullptr)
     , mSpectra(nullptr)
     , mSpectraPositiveWeights(nullptr)
     , mSpectraNegativeWeights(nullptr)
     , mResultWeights(nullptr)
-    , mResultsLoaded(false)
   {}
 
   virtual void initialize(const DataPoints<F> &points,
@@ -50,7 +76,7 @@ public:
       throw bpp::RuntimeError("No CUDA devices found!");
     }
 
-    IGradientDescendAlgorithm<F>::initialize(points,
+    IGradientDescentAlgorithm<F>::initialize(points,
                                              spectra,
                                              spectraPositiveWeights,
                                              spectraNegativeWeights,
@@ -73,68 +99,88 @@ public:
   {
     CUCH(cudaSetDevice(0));
 
-    mCuPoints.realloc(this->mN * this->mDim);
+    mHostPoints.realloc(this->mN * this->mDim, false, false, true);
+    mHostInitialResults.realloc(
+      this->mN * this->mSpectrumN, false, false, true);
     mCuSpectra.realloc(this->mSpectrumN * this->mDim);
     mCuSpectraPositiveWeights.realloc(this->mSpectrumN * this->mDim);
     mCuSpectraNegativeWeights.realloc(this->mSpectrumN * this->mDim);
     mCuResultWeights.realloc(this->mSpectrumN);
-    mCuResult.realloc(this->mN * this->mSpectrumN);
-    mCuResultResiduals.realloc(this->mN * this->mDim);
-    mCuGradientMemory.realloc(this->mN * this->mSpectrumN);
 
-    mCuPoints.write(mPoints->data(), this->mN * this->mDim);
+    memcpy(&*mHostPoints, mPoints->data(), this->mN * this->mDim * sizeof(F));
+    memcpy(&*mHostInitialResults,
+           this->mResult.data(),
+           this->mN * this->mSpectrumN * sizeof(F));
     mCuSpectra.write(mSpectra->data(), this->mSpectrumN * this->mDim);
     mCuSpectraPositiveWeights.write(mSpectraPositiveWeights->data(),
                                     this->mSpectrumN * this->mDim);
     mCuSpectraNegativeWeights.write(mSpectraNegativeWeights->data(),
                                     this->mSpectrumN * this->mDim);
     mCuResultWeights.write(mResultWeights->data(), this->mSpectrumN);
-    mCuResult.write(this->mResult.data(), this->mN * this->mSpectrumN);
-    mCuGradientMemory.memset(0);
 
-    mResultsLoaded = false;
+    streamContext[0].initialize(this->mDim, this->mSpectrumN);
+    streamContext[1].initialize(this->mDim, this->mSpectrumN);
   }
 
   void run() override
   {
-    GradientDescendProblemInstance<F> gdProblem(*mCuPoints,
-                                                *mCuSpectra,
-                                                *mCuSpectraPositiveWeights,
-                                                *mCuSpectraNegativeWeights,
-                                                *mCuResultWeights,
-                                                *mCuResult,
-                                                *mCuResultResiduals,
-                                                this->mDim,
-                                                this->mN,
-                                                this->mSpectrumN,
-                                                this->mIterations,
-                                                this->mAlpha,
-                                                this->mAcceleration,
-                                                *mCuGradientMemory);
-    KERNEL::run(gdProblem, mCudaExec);
+    for (std::size_t batchOffset = 0; batchOffset < this->mN;
+         batchOffset += problemBatchSize) {
+      const auto batchSize = std::min(problemBatchSize, this->mN - batchOffset);
+
+      auto &currentContext =
+        streamContext[(batchOffset / problemBatchSize) % 2];
+
+      currentContext.mCuPoints.writeAsync(*currentContext.mStream,
+                                          &*mHostPoints +
+                                            batchOffset * this->mDim,
+                                          batchSize * this->mDim);
+      currentContext.mCuResult.writeAsync(*currentContext.mStream,
+                                          &*mHostInitialResults +
+                                            batchOffset * this->mSpectrumN,
+                                          batchSize * this->mSpectrumN);
+
+      GradientDescentProblemInstance<F> gdProblem(
+        *currentContext.mCuPoints,
+        *mCuSpectra,
+        *mCuSpectraPositiveWeights,
+        *mCuSpectraNegativeWeights,
+        *mCuResultWeights,
+        *currentContext.mCuResult,
+        *currentContext.mCuResultResiduals,
+        this->mDim,
+        batchSize,
+        this->mSpectrumN,
+        this->mIterations,
+        this->mAlpha,
+        this->mAcceleration);
+
+      mCudaExec.stream = *currentContext.mStream;
+      KERNEL::run(gdProblem, mCudaExec);
+
+      currentContext.mCuResult.readAsync(*currentContext.mStream,
+                                         this->mResult.data() +
+                                           batchOffset * this->mSpectrumN,
+                                         batchSize * this->mSpectrumN);
+      currentContext.mCuResultResiduals.readAsync(
+        *currentContext.mStream,
+        this->mResultResiduals.data() + batchOffset * this->mDim,
+        batchSize * this->mDim);
+    }
+
     CUCH(cudaDeviceSynchronize());
   }
 
-  const typename IGradientDescendAlgorithm<F>::ResultT getResults() override
+  const typename IGradientDescentAlgorithm<F>::ResultT getResults() override
   {
-    if (!mResultsLoaded) {
-      mCuResult.read(this->mResult.data());
-      mCuResultResiduals.read(this->mResultResiduals.data());
-      mResultsLoaded = true;
-    }
-
-    return IGradientDescendAlgorithm<F>::getResults();
+    return IGradientDescentAlgorithm<F>::getResults();
   }
 
   void cleanup() override
   {
-    mCuPoints.free();
     mCuSpectra.free();
     mCuSpectraPositiveWeights.free();
     mCuSpectraNegativeWeights.free();
     mCuResultWeights.free();
-    mCuResult.free();
-    mCuResultResiduals.free();
-    mCuGradientMemory.free();
   }
 };

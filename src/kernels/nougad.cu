@@ -12,123 +12,54 @@
 
 namespace cg = cooperative_groups;
 
-template<typename F>
+template<typename F, typename T>
 __inline__ __device__ void
-computeResiduals(const F *const __restrict__ points,
+computeResiduals(T &group,
+                 const F *const __restrict__ points,
                  const F *const __restrict__ spectra,
                  const F *const __restrict__ result,
                  F *const __restrict__ residuals,
                  const std::uint32_t dim,
                  const std::uint32_t spectrumN)
 {
-  for (std::uint32_t d_idx = 0; d_idx < dim; ++d_idx)
+  for (std::uint32_t d_idx = group.thread_rank(); d_idx < dim;
+       d_idx += group.size())
     residuals[d_idx] = -points[d_idx];
 
-  for (std::uint32_t k_idx = 0; k_idx < spectrumN; ++k_idx)
-    for (size_t d_idx = 0; d_idx < dim; ++d_idx)
-      residuals[d_idx] += result[k_idx] * spectra[k_idx * dim + d_idx];
+  group.sync();
+
+  for (std::uint32_t idx = group.thread_rank(); idx < spectrumN * dim;
+       idx += group.size()) {
+    const auto k_idx = idx / dim;
+    const auto d_idx = idx % dim;
+    residuals[d_idx] += result[k_idx] * spectra[idx];
+  }
 }
 
 /**
- * Each thread performs descent for one point.
- */
-template<typename F>
-__global__ void
-nougadBaseKernel(const F *__restrict__ points,
-                 const F *const __restrict__ spectra,
-                 const F *const __restrict__ spectraPositiveWeights,
-                 const F *const __restrict__ spectraNegativeWeights,
-                 const F *const __restrict__ resultWeights,
-                 F *__restrict__ result,
-                 F *__restrict__ resultResiduals,
-                 F *__restrict__ gradientMemory,
-                 const std::uint32_t dim,
-                 const std::uint32_t n,
-                 const std::uint32_t spectrumN,
-                 const std::uint32_t iterations,
-                 const F alpha,
-                 const F acceleration)
-{
-  // set variables for each thread specifically
-  {
-    const auto threadIndex = threadIdx.x + blockIdx.x * blockDim.x;
-    points = points + threadIndex * dim;
-    result = result + threadIndex * spectrumN;
-    resultResiduals = resultResiduals + threadIndex * dim;
-    gradientMemory = gradientMemory + threadIndex * spectrumN;
-  }
-
-  for (std::uint32_t i = 0; i < iterations; ++i) {
-    computeResiduals(points, spectra, result, resultResiduals, dim, spectrumN);
-
-    for (std::uint32_t k_idx = 0; k_idx < spectrumN; ++k_idx) {
-      F gradient = result[k_idx] > 0 ? 0 : resultWeights[k_idx] * result[k_idx];
-
-      for (std::uint32_t d_idx = 0; d_idx < dim; ++d_idx) {
-        const F w = (resultResiduals[d_idx] > 0
-                       ? spectraPositiveWeights
-                       : spectraNegativeWeights)[k_idx * dim + d_idx];
-        gradient += resultResiduals[d_idx] * spectra[k_idx * dim + d_idx] * w;
-      }
-
-      // apply gradient
-      {
-        gradient *= alpha;
-        if (gradient * gradientMemory[k_idx] > 0)
-          gradient += acceleration * gradientMemory[k_idx];
-        result[k_idx] -= gradient;
-        gradientMemory[k_idx] = gradient;
-      }
-    }
-  }
-  computeResiduals(points, spectra, result, resultResiduals, dim, spectrumN);
-}
-
-// runner wrapped in a class
-template<typename F>
-void
-NougadBaseKernel<F>::run(const GradientDescendProblemInstance<F> &in,
-                         CudaExecParameters &exec)
-{
-  unsigned int blockCount = (in.n + exec.blockSize - 1) / exec.blockSize;
-  nougadBaseKernel<F><<<blockCount, exec.blockSize>>>(in.points,
-                                                      in.spectra,
-                                                      in.spectraPositiveWeights,
-                                                      in.spectraNegativeWeights,
-                                                      in.resultWeights,
-                                                      in.result,
-                                                      in.resultResiduals,
-                                                      in.gradientMemory,
-                                                      in.dim,
-                                                      in.n,
-                                                      in.spectrumN,
-                                                      in.iterations,
-                                                      in.alpha,
-                                                      in.acceleration);
-}
-
-/**
- * Each thread performs descent for one point.
+ * A group of threads performs descent for one point.
  * Common arrays are stored to shared memory.
  */
-template<typename F>
+template<typename F, std::size_t group_size>
 __global__ void
-nougadBaseSharedKernel(const F *__restrict__ points,
-                       const F *const __restrict__ spectra,
-                       const F *const __restrict__ spectraPositiveWeights,
-                       const F *const __restrict__ spectraNegativeWeights,
-                       const F *const __restrict__ resultWeights,
-                       F *__restrict__ result,
-                       F *__restrict__ resultResiduals,
-                       F *__restrict__ gradientMemory,
-                       const std::uint32_t dim,
-                       const std::uint32_t n,
-                       const std::uint32_t spectrumN,
-                       const std::uint32_t iterations,
-                       const F alpha,
-                       const F acceleration)
+nougadGroupSharedKernel(const F *__restrict__ points,
+                        const F *const __restrict__ spectra,
+                        const F *const __restrict__ spectraPositiveWeights,
+                        const F *const __restrict__ spectraNegativeWeights,
+                        const F *const __restrict__ resultWeights,
+                        F *__restrict__ result,
+                        F *__restrict__ resultResiduals,
+                        const std::uint32_t dim,
+                        const std::uint32_t n,
+                        const std::uint32_t spectrumN,
+                        const std::uint32_t iterations,
+                        const F alpha,
+                        const F acceleration)
 {
   extern __shared__ char sharedMemory[];
+
+  auto group = cg::tiled_partition<group_size>(cg::this_thread_block());
+
   F *const __restrict__ spectraCache = reinterpret_cast<F *>(sharedMemory);
   F *const __restrict__ spectraPositiveWeightsCache =
     spectraCache + dim * spectrumN;
@@ -136,26 +67,36 @@ nougadBaseSharedKernel(const F *__restrict__ points,
     spectraPositiveWeightsCache + dim * spectrumN;
   F *const __restrict__ resultWeightsCache =
     spectraNegativeWeightsCache + dim * spectrumN;
-  F *const __restrict__ gradientMemoryCache =
-    resultWeightsCache + spectrumN + threadIdx.x * spectrumN;
-  F *const __restrict__ resultResidualsCache =
-    resultWeightsCache + spectrumN + blockDim.x * spectrumN + threadIdx.x * dim;
-  F *const __restrict__ resultCache =
-    resultWeightsCache + spectrumN + blockDim.x * spectrumN + blockDim.x * dim +
-    threadIdx.x * spectrumN;
 
-  // set variables for each thread specifically
+  F *const __restrict__ gradientMemoryCache =
+    resultWeightsCache + spectrumN + group.meta_group_rank() * spectrumN;
+  F *const __restrict__ resultResidualsCache =
+    resultWeightsCache + spectrumN + group.meta_group_size() * spectrumN +
+    group.meta_group_rank() * dim;
+  F *const __restrict__ resultCache =
+    resultWeightsCache + spectrumN + group.meta_group_size() * spectrumN +
+    group.meta_group_size() * dim + group.meta_group_rank() * spectrumN;
+  F *const __restrict__ pointCache =
+    resultWeightsCache + spectrumN + group.meta_group_size() * spectrumN +
+    group.meta_group_size() * dim + group.meta_group_size() * spectrumN +
+    group.meta_group_rank() * dim;
+
+  // set variables for each group specifically
   {
-    const auto threadIndex = threadIdx.x + blockIdx.x * blockDim.x;
-    points = points + threadIndex * dim;
-    result = result + threadIndex * spectrumN;
-    resultResiduals = resultResiduals + threadIndex * dim;
+    const auto groupIndex =
+      group.meta_group_rank() + blockIdx.x * group.meta_group_size();
+    points = points + groupIndex * dim;
+    result = result + groupIndex * spectrumN;
+    resultResiduals = resultResiduals + groupIndex * dim;
   }
 
   // store to shared memory
   {
-    memset(gradientMemoryCache, 0, spectrumN * sizeof(F));
-    memcpy(resultCache, result, spectrumN * sizeof(F));
+    if (group.thread_rank() == 0) {
+      memset(gradientMemoryCache, 0, spectrumN * sizeof(F));
+      memcpy(resultCache, result, spectrumN * sizeof(F));
+      memcpy(pointCache, points, dim * sizeof(F));
+    }
     if (threadIdx.x == 0) {
       memcpy(spectraCache, spectra, dim * spectrumN * sizeof(F));
       memcpy(spectraPositiveWeightsCache,
@@ -170,10 +111,16 @@ nougadBaseSharedKernel(const F *__restrict__ points,
   }
 
   for (std::uint32_t i = 0; i < iterations; ++i) {
-    computeResiduals(
-      points, spectraCache, resultCache, resultResidualsCache, dim, spectrumN);
+    computeResiduals(group,
+                     pointCache,
+                     spectraCache,
+                     resultCache,
+                     resultResidualsCache,
+                     dim,
+                     spectrumN);
 
-    for (std::uint32_t k_idx = 0; k_idx < spectrumN; ++k_idx) {
+    for (std::uint32_t k_idx = group.thread_rank(); k_idx < spectrumN;
+         k_idx += group.size()) {
       F gradient = resultCache[k_idx] > 0
                      ? 0
                      : resultWeightsCache[k_idx] * resultCache[k_idx];
@@ -195,38 +142,51 @@ nougadBaseSharedKernel(const F *__restrict__ points,
         gradientMemoryCache[k_idx] = gradient;
       }
     }
+
+    group.sync();
   }
-  computeResiduals(
-    points, spectraCache, resultCache, resultResiduals, dim, spectrumN);
-  memcpy(result, resultCache, spectrumN * sizeof(F));
+
+  computeResiduals(group,
+                   pointCache,
+                   spectraCache,
+                   resultCache,
+                   resultResiduals,
+                   dim,
+                   spectrumN);
+
+  if (group.thread_rank() == 0) {
+    memcpy(result, resultCache, spectrumN * sizeof(F));
+  }
 }
 
 // runner wrapped in a class
 template<typename F>
 void
-NougadBaseSharedKernel<F>::run(const GradientDescendProblemInstance<F> &in,
-                               CudaExecParameters &exec)
+NougadGroupSharedKernel<F>::run(const GradientDescentProblemInstance<F> &in,
+                                CudaExecParameters &exec)
 {
-  unsigned int blockCount = (in.n + exec.blockSize - 1) / exec.blockSize;
+  constexpr std::size_t groupSize = 8;
+  const unsigned int blockSize = exec.blockSize / groupSize;
+  unsigned int blockCount = (in.n + blockSize - 1) / blockSize;
   unsigned int sharedMemory =
     (3 * (in.dim * in.spectrumN) + in.spectrumN) * sizeof(F) +
-    exec.blockSize * sizeof(F) * (in.spectrumN + in.dim + in.spectrumN);
+    blockSize * sizeof(F) * (in.spectrumN + in.dim + in.spectrumN + in.dim);
 
-  nougadBaseSharedKernel<F>
-    <<<blockCount, exec.blockSize, sharedMemory>>>(in.points,
-                                                   in.spectra,
-                                                   in.spectraPositiveWeights,
-                                                   in.spectraNegativeWeights,
-                                                   in.resultWeights,
-                                                   in.result,
-                                                   in.resultResiduals,
-                                                   in.gradientMemory,
-                                                   in.dim,
-                                                   in.n,
-                                                   in.spectrumN,
-                                                   in.iterations,
-                                                   in.alpha,
-                                                   in.acceleration);
+  nougadGroupSharedKernel<F, groupSize>
+    <<<blockCount, exec.blockSize, sharedMemory, exec.stream>>>(
+      in.points,
+      in.spectra,
+      in.spectraPositiveWeights,
+      in.spectraNegativeWeights,
+      in.resultWeights,
+      in.result,
+      in.resultResiduals,
+      in.dim,
+      in.n,
+      in.spectrumN,
+      in.iterations,
+      in.alpha,
+      in.acceleration);
 }
 
 /*
@@ -236,7 +196,7 @@ template<typename F>
 void
 instantiateKernelRunnerTemplates()
 {
-  GradientDescendProblemInstance<F> instance(nullptr,
+  GradientDescentProblemInstance<F> instance(nullptr,
                                              nullptr,
                                              nullptr,
                                              nullptr,
@@ -251,8 +211,7 @@ instantiateKernelRunnerTemplates()
                                              0);
   CudaExecParameters exec;
 
-  NougadBaseKernel<F>::run(instance, exec);
-  NougadBaseSharedKernel<F>::run(instance, exec);
+  NougadGroupSharedKernel<F>::run(instance, exec);
 }
 
 template void

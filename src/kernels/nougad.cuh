@@ -7,9 +7,8 @@
   class NAME                                                                   \
   {                                                                            \
   public:                                                                      \
-    static void run(const GradientDescendProblemInstance<F> &in,               \
+    static void run(const GradientDescentProblemInstance<F> &in,               \
                     CudaExecParameters &exec);                                 \
   };
 
-DECLARE_NOUGAD_KERNEL(NougadBaseKernel)
-DECLARE_NOUGAD_KERNEL(NougadBaseSharedKernel)
+DECLARE_NOUGAD_KERNEL(NougadGroupSharedKernel)

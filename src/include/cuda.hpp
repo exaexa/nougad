@@ -220,8 +220,8 @@ public:
       CUCH(cudaSetDevice(deviceId));
 
     // Allocate the memory.
-    mFlags = (mapped ? cudaHostAllocMapped : 0) ||
-             (pinned ? cudaHostAllocPortable : 0) ||
+    mFlags = (mapped ? cudaHostAllocMapped : 0) |
+             (pinned ? cudaHostAllocPortable : 0) |
              (writeCombined ? cudaHostAllocWriteCombined : 0);
     CUCH(cudaHostAlloc(&mData, count * sizeof(T), mFlags));
     mCount = count;
