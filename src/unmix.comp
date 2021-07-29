@@ -78,7 +78,7 @@ main()
     for (uint ki = 0; ki < k; ++ki) {
       tmp = g_k[ki] * params.alpha;
       if (tmp * lastg_k[ki] > 0)
-        tmp += params.accel * tmp + lastg_k[ki];
+        tmp += params.accel * lastg_k[ki];
       x_nk[ni + params.n * ki] -= tmp;
       lastg_k[ki] = tmp;
     }

@@ -14,45 +14,6 @@ const size_t local_size = 64;
 const size_t batch_size = 5120;
 
 /*
- * fancy iterator for feeding in the pre-multiplied residual weights
- */
-
-template<typename I>
-struct mult_iter
-{
-  using iterator_category = std::input_iterator_tag;
-  using difference_type = std::ptrdiff_t;
-  using value_type = typename I::value_type;
-  using reference = typename I::value_type;
-
-  I a, b;
-
-  mult_iter(I a, I b)
-    : a(a)
-    , b(b)
-  {}
-  mult_iter(I a)
-    : a(a)
-    , b(a)
-  {}
-
-  ptrdiff_t operator-(mult_iter right) const { return a - right.a; }
-
-  float operator*() const { return *a * *b; }
-
-  mult_iter &operator++()
-  {
-    ++a;
-    ++b;
-    return *this;
-  }
-
-  bool operator==(mult_iter other) const { return a == other.a; }
-  bool operator!=(mult_iter other) const { return a != other.a; }
-  bool operator<(mult_iter other) const { return a < other.a; }
-};
-
-/*
  * transposed matrix view -- iterating on transposed(ptr,rows,cols) that is
  * stored by columns outputs (or ingests) the numbers as if it was read by
  * rows.
@@ -146,12 +107,10 @@ nougad_c(const int *np,
 
   vu_s_kd.fromHost(transposed(s_dk, d, k).begin(),
                    transposed(s_dk, d, k).end());
-  vu_spw_kd.fromHost(
-    mult_iter(transposed(spw_dk, d, k).begin(), transposed(s_dk, d, k).begin()),
-    mult_iter(transposed(spw_dk, d, k).end()));
-  vu_snw_kd.fromHost(
-    mult_iter(transposed(snw_dk, d, k).begin(), transposed(s_dk, d, k).begin()),
-    mult_iter(transposed(snw_dk, d, k).end()));
+  vu_spw_kd.fromHost(transposed(spw_dk, d, k).begin(),
+                     transposed(spw_dk, d, k).end());
+  vu_snw_kd.fromHost(transposed(snw_dk, d, k).begin(),
+                     transposed(snw_dk, d, k).end());
   vu_nw_k.fromHost(nw_k, nw_k + k);
 
   using Specs = vuh::typelist<uint32_t /*n_blocks*/,
