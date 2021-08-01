@@ -24,7 +24,7 @@ nougad_c(const int *n,
     cudaDeviceProp props;
     CUCH(cudaGetDeviceProperties(&props, 0));
 
-    exec.blockSize = 64;
+    exec.blockSize = 256;
     exec.sharedMemorySize = (unsigned int)props.sharedMemPerBlock;
   }
 
