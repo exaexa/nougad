@@ -1,10 +1,6 @@
 
 CXX_STD = CXX20
-
-VUH_SOURCES = vuh/device.cpp vuh/error.cpp vuh/instance.cpp vuh/utils.cpp
-OBJECTS = nougad.o $(VUH_SOURCES:.cpp=.o)
 PKG_CPPFLAGS = -Ivuh/include
-
 PKG_LIBS = -lvulkan
 
 all: nougad.so
@@ -13,5 +9,3 @@ all: nougad.so
 	glslangValidator -V --variable-name spirv_$* -o $*.comph $<
 
 nougad.o: unmix.comph
-
-nougad.so: $(OBJECTS)

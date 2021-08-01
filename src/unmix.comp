@@ -1,9 +1,15 @@
 #version 430
 
 layout(local_size_x_id = 0) in;
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+layout(constant_id = 0) const uint blocksize = 64; // copy of local_size_x
 layout(constant_id = 1) const uint k = 32; // these are dummy values for glslang
 layout(constant_id = 2) const uint d = 32; // they must be rewritten by user
-layout(constant_id = 3) const uint iters = 200;
+layout(constant_id = 3) const uint iters = 250;
+
+shared float shr_Bd[blocksize * d];
+shared float shx_Bk[blocksize * k];
 
 layout(push_constant) uniform Params
 {
@@ -17,25 +23,25 @@ layout(std430, binding = 0) buffer sbuf
 {
   float s_kd[];
 };
-layout(std430, binding = 1) buffer spwbuf
-{
-  float spw_kd[];
-};
-layout(std430, binding = 2) buffer snwbuf
+layout(std430, binding = 1) buffer snwbuf
 {
   float snw_kd[];
+};
+layout(std430, binding = 2) buffer spwbuf
+{
+  float spw_kd[];
 };
 layout(std430, binding = 3) buffer nwbuf
 {
   float nw_k[];
 };
-layout(std430, binding = 4) buffer ybuf
-{
-  float y_nd[];
-};
-layout(std430, binding = 5) buffer xbuf
+layout(std430, binding = 4) buffer xbuf
 {
   float x_nk[];
+};
+layout(std430, binding = 5) buffer ybuf
+{
+  float y_nd[];
 };
 layout(std430, binding = 6) buffer rbuf
 {
@@ -45,29 +51,36 @@ layout(std430, binding = 6) buffer rbuf
 void
 main()
 {
-  uint ni = gl_GlobalInvocationID.x;
+  const uint ni = gl_GlobalInvocationID.x;
+  const uint Bi = gl_LocalInvocationID.x;
+
   float lastg_k[k], g_k[k];
   float tmp;
-  if (ni >= params.n)
-    return;
 
+  /* prepare local data */
   for (uint ki = 0; ki < k; ++ki)
     lastg_k[ki] = 0;
+
+  for (uint ki = 0; ki < k; ++ki)
+    shx_Bk[Bi + blocksize * ki] = x_nk[ni + params.n * ki];
+
+  /* run iters */
+  if (ni >= params.n)
+    return;
 
   for (uint ii = 0; ii < iters; ++ii) {
     for (uint di = 0; di < d; ++di) {
       tmp = 0;
       for (uint ki = 0; ki < k; ++ki)
-        tmp += x_nk[ni + params.n * ki] * s_kd[ki + k * di];
-      r_nd[ni + params.n * di] = tmp - y_nd[ni + params.n * di];
+        tmp += shx_Bk[Bi + blocksize * ki] * s_kd[ki + k * di];
+      shr_Bd[Bi + blocksize * di] = tmp - y_nd[ni + params.n * di];
     }
 
-    for (uint ki = 0; ki < k; ++ki) {
-      g_k[ki] = min(x_nk[ni + params.n * ki], 0) * nw_k[ki];
-    }
+    for (uint ki = 0; ki < k; ++ki)
+      g_k[ki] = min(shx_Bk[Bi + blocksize * ki], 0) * nw_k[ki];
 
     for (uint di = 0; di < d; ++di) {
-      tmp = r_nd[ni + params.n * di];
+      tmp = shr_Bd[Bi + blocksize * di];
       for (uint ki = 0; ki < k; ++ki) {
         float a = spw_kd[ki + k * di];
         float b = snw_kd[ki + k * di];
@@ -79,8 +92,15 @@ main()
       tmp = g_k[ki] * params.alpha;
       if (tmp * lastg_k[ki] > 0)
         tmp += params.accel * lastg_k[ki];
-      x_nk[ni + params.n * ki] -= tmp;
+      shx_Bk[Bi + blocksize * ki] -= tmp;
       lastg_k[ki] = tmp;
     }
   }
+
+  /* retrieve the results from shared memory */
+  for (uint ki = 0; ki < k; ++ki)
+    x_nk[ni + params.n * ki] = shx_Bk[Bi + blocksize * ki];
+
+  for (uint di = 0; di < d; ++di)
+    r_nd[ni + params.n * di] = shr_Bd[Bi + blocksize * di];
 }
