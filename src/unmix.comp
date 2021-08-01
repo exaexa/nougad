@@ -3,10 +3,10 @@
 layout(local_size_x_id = 0) in;
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-layout(constant_id = 0) const uint blocksize = 64; // copy of local_size_x
-layout(constant_id = 1) const uint k = 32; // these are dummy values for glslang
-layout(constant_id = 2) const uint d = 32; // they must be rewritten by user
-layout(constant_id = 3) const uint iters = 250;
+layout(constant_id = 0) const uint blocksize = 1; // copy of local_size_x
+layout(constant_id = 1) const uint k = 1; // these are dummy values for glslang
+layout(constant_id = 2) const uint d = 1; // they must be rewritten by user
+layout(constant_id = 3) const uint iters = 0;
 
 shared float shr_Bd[blocksize * d];
 shared float shx_Bk[blocksize * k];
