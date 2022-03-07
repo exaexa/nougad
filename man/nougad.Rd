@@ -7,8 +7,8 @@
 nougad(
   mixed,
   spectra,
-  snw = 1,
-  spw = 1,
+  rnw = 1,
+  rpw = 1,
   nw = 1,
   start = 0,
   alpha = 0.01,
@@ -21,12 +21,12 @@ nougad(
 
 \item{spectra}{k*d matrix of spectra, norm of rows must be 1}
 
-\item{snw}{negative weights for spectra, will be converted to k*d matrix}
+\item{rnw}{negative weights for residual (converted to vector of size d)}
 
-\item{spw}{positive weights for spectra, will be converted to k*d matrix}
+\item{rpw}{positive weights for residual (converted to vector of size d)}
 
-\item{nw}{weights of non-negative learning factor, gets converted to a
-vector of size k}
+\item{nw}{weights of non-negative learning factor (converted to a
+vector of size k)}
 
 \item{start}{starting points for the gradient descent}
 
@@ -50,11 +50,10 @@ AdaProp-style acceleration factor \code{accel} in each dimension.
 }
 \details{
 Additionally, the result may be weighted towards non-negative region in each
-result dimension by weights \code{nw}. Influence of each input measurement on
-each output parameter is weighted by matrices \code{snw} (in case the residual in
-the dimension is negative) and \code{spw} (in case the residual is positive). The
-latter allows one to implicitly force a non-negative or non-positive
-residual.
+result dimension by weights \code{nw}. Residual error is weighted by vectors
+\code{rnw} (in case the residual in the dimension is negative) and \code{rpw}
+(in case the residual is positive). The latter allows one to implicitly
+force a non-negative or non-positive residual.
 
-The method should behave like OLS for snw,spw=1 and nw=0.
+The method should behave like OLS for rnw,rpw=1 and nw=0.
 }

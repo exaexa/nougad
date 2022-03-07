@@ -11,8 +11,8 @@ nougad_c(const int *np,
          const float *alphap,
          const float *accelp,
          const float *s_dk,
-         const float *spw_dk,
-         const float *snw_dk,
+         const float *rpw_d,
+         const float *rnw_d,
          const float *nw_k,
          const float *y_dn,
          float *x_kn,
@@ -38,6 +38,8 @@ nougad_c(const int *np,
       for (ki = 0; ki < k; ++ki)
         for (di = 0; di < d; ++di)
           r_d[di] += x_k[ki] * s_dk[di + d * ki];
+      for (di = 0; di < d; ++di)
+        r_d[di] *= r_d[di] > 0 ? rpw_d[di] : rnw_d[di];
 
       if (ii >= iters)
         break;
@@ -46,7 +48,7 @@ nougad_c(const int *np,
         float gki = (x_k[ki] > 0 ? 0 : nw_k[ki] * x_k[ki]);
         for (di = 0; di < d; ++di)
           gki +=
-            r_d[di] * (r_d[di] > 0 ? spw_dk[di + d * ki] : snw_dk[di + d * ki]);
+            r_d[di] * s_dk[di + d * ki];
 
         gki *= alpha;
         if (gki * lastg_k[ki] > 0)
