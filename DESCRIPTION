@@ -2,12 +2,24 @@ Package: nougad
 Title: Non-linear Unmixing by Gradient Descent
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "Mirek",
-           family = "Kratochvíl",
-           role = c("aut", "cre"),
-           email = "exa.exa@gmail.com",
-           comment = c(ORCID = "0000-0001-7356-4075"))
-Description: What the package does (one paragraph).
+    c(person(given = "Mirek",
+             family = "Kratochvíl",
+             role = c("aut", "cre"),
+             email = "exa.exa@gmail.com",
+             comment = c(ORCID = "0000-0001-7356-4075")),
+      person(given = "Matěj",
+             family = "Nemec",
+             role = c("ctb"),
+             email = "matej.nemec@gmail.com"),
+      person(given = "Adam",
+             family = "Šmelko",
+             role = c("ctb"),
+             email = "smelko@d3s.mff.cuni.cz"),
+      person(given = "David",
+             family = "Bednárek",
+             role = c("ctb"),
+             email = "bednarek@ksi.mff.cuni.cz"))
+Description: Improved unmixing of spectral and traditional multicolor flow cytometry data.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
