@@ -48,7 +48,9 @@ nougad <- function(
   rnw <- rep(rnw, length.out = d)
   rpw <- rep(rpw, length.out = d)
   nw <- {
-    tmp <- rep(0, k); tmp[] <- nw; tmp
+    tmp <- rep(0, k)
+    tmp[] <- nw
+    tmp
   }
 
   x <- matrix(start, ncol = n, nrow = k)
