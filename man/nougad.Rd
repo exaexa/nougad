@@ -7,23 +7,24 @@
 nougad(
   mixed,
   spectra,
-  snw = 1,
-  spw = 1,
+  rnw = 1,
+  rpw = 1,
   nw = 1,
   start = 0,
   alpha = 0.01,
   accel = 1,
-  iters = 250L
+  iters = 250L,
+  threads = 0L
 )
 }
 \arguments{
 \item{mixed}{n*d matrix of measurements}
 
-\item{spectra}{k*d matrix of spectra, norm of rows must be 1}
+\item{spectra}{k*d matrix of spectra, norm of rows must be 1.}
 
-\item{snw}{negative weights for spectra, will be converted to k*d matrix}
+\item{rnw}{negative weights for residual, will be converted to vector of length d}
 
-\item{spw}{positive weights for spectra, will be converted to k*d matrix}
+\item{rpw}{positive weights for residual, will be converted to vector of length d}
 
 \item{nw}{weights of non-negative learning factor, gets converted to a
 vector of size k}
@@ -37,6 +38,8 @@ the convergence direction in that dimension is the same as in
 the last iteration.}
 
 \item{iters}{number of iterations}
+
+\item{threads}{number of threads to use for computation, defaults to 0 (auto-detection), 1 disables all threading.}
 }
 \value{
 a list with \code{unmixed} n\emph{k matrix and \code{residuals} n}d matrix, so that
@@ -51,10 +54,13 @@ AdaProp-style acceleration factor \code{accel} in each dimension.
 \details{
 Additionally, the result may be weighted towards non-negative region in each
 result dimension by weights \code{nw}. Influence of each input measurement on
-each output parameter is weighted by matrices \code{snw} (in case the residual in
-the dimension is negative) and \code{spw} (in case the residual is positive). The
+each output parameter is weighted by matrices \code{rnw} (in case the residual in
+the dimension is negative) and \code{rpw} (in case the residual is positive). The
 latter allows one to implicitly force a non-negative or non-positive
 residual.
 
-The method should behave like OLS for snw,spw=1 and nw=0.
+The method should behave like OLS for rnw,rpw=1 and nw=0.
+
+Caveat: Row and column names of all matrices are ignored, the correct order
+of channels/markers must be ensured manually.
 }
